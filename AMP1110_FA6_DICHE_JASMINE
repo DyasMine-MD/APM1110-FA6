@@ -1,8 +1,9 @@
 ---
-title: "APM1110-FA6"
+title: "APM1110_FA6"
+subtitle: 
 author: "Jasmine Diche"
-date: "September 20,2026"
-output: 
+date: "September 20, 2026"
+output:
   pdf_document:
     latex_engine: xelatex
     keep_tex: true
@@ -14,29 +15,43 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 ## I. Geometric Distribution
 
-```{r geometric_simulation}
-# 1. Set the probability of success
-p <- 0.2
+The geometric distribution models the number of trials required to achieve the first success in a sequence of independent Bernoulli trials, each having a constant probability of success $p$.
 
-# 2. Generate 1000 random variables (trials to first success)
+> **Note on R's Implementation:** R's `rgeom(n, p)` counts failures before the first success. To model the **total number of trials** required, we add 1: `rgeom(n, p) + 1`.
+
+### 1. Set the probability of success
+
+```{r}
+p <- 0.2
+```
+
+### 2. Generate 1000 random variables (trials to first success)
+
+```{r}
 set.seed(42) # For reproducibility
 x <- rgeom(1000, prob = p) + 1
+```
 
-# 3. Calculate basic statistics
+### 3. Calculate basic statistics
+
+```{r}
 mean_x <- mean(x)
 var_x  <- var(x)
 sd_x   <- sd(x)
+```
 
-# 4. Print formatted results
+### 4. Print formatted results
+
+```{r}
 cat("Number of trials required to achieve first success:\n")
-cat("Mean:", sprintf("%.2f", mean_x), "\n")
-cat("Variance:", sprintf("%.2f", var_x), "\n")
-cat("Standard Deviation:", sprintf("%.2f", sd_x), "\n")
+cat("Mean (in 2 decimal places):", sprintf("%.2f", mean_x), "\n")
+cat("Variance (in 2 decimal places):", sprintf("%.2f", var_x), "\n")
+cat("Standard deviation (in 2 decimal places):", sprintf("%.2f", sd_x), "\n")
 ```
 
 ### 5. Histogram of Results
 
-```{r}
+```{r, fig.width=8, fig.height=5}
 hist(x,
      breaks = seq(0.5, max(x) + 0.5, by = 1),
      col = "pink",
@@ -50,7 +65,16 @@ hist(x,
 
 ## II. Hypergeometric Distribution
 
+A plant manufactures IC chips of which $10\%$ are expected to be defective. A sample of size $n = 10$ is drawn from a box before transportation. We want to estimate the probability that the sample contains **more than 10% defectives**.
+
+For a sample size of $n = 10$, 10% corresponds to $10 \times 0.10 = 1$ defective chip. Therefore, containing *more than 10% defectives* means finding **more than 1 defective chip** ($X > 1$, or $X \ge 2$).
+
 ### 1. Sample of 10 selected from a box of 40 ($N = 40$)
+
+-   Population size: $N = 40$
+-   Defective chips in population: $m = 40 \times 0.10 = 4$
+-   Non-defective chips in population: $n_{non} = 40 - 4 = 36$
+-   Sample size: $k = 10$
 
 ```{r}
 # Parameters for Box of 40
@@ -61,12 +85,26 @@ k_sample <- 10
 
 # Probability of > 10% defectives
 p1 <- phyper(1, m = m1, n = n1, k = k_sample, lower.tail = FALSE)
+
+# Mathematical steps
+px0_1 <- dhyper(0, m = m1, n = n1, k = k_sample)
+px1_1 <- dhyper(1, m = m1, n = n1, k = k_sample)
+
 cat("P(Defectives > 10% | N = 40) =", round(p1, 4), "\n")
 ```
 
+**Calculations:**
+* $P(X = 0) \approx `r round(px0_1, 4)`$
+* $P(X = 1) \approx `r round(px1_1, 4)`$
+* $P(X > 1) = 1 - (`r round(px0_1, 4)` + `r round(px1_1, 4)`) = \mathbf{`r round(p1, 4)`}$
 ---
 
 ### 2. Sample of 10 selected from a box of 5000 ($N = 5000$)
+
+-   Population size: $N = 5000$
+-   Defective chips in population: $m = 5000 \times 0.10 = 500$
+-   Non-defective chips in population: $n_{non} = 5000 - 500 = 4500$
+-   Sample size: $k = 10$
 
 ```{r}
 # Parameters for Box of 5000
@@ -76,5 +114,15 @@ n2 <- N2 - m2    # 4500 non-defective
 
 # Probability of > 10% defectives
 p2 <- phyper(1, m = m2, n = n2, k = k_sample, lower.tail = FALSE)
+
+# Mathematical steps
+px0_2 <- dhyper(0, m = m2, n = n2, k = k_sample)
+px1_2 <- dhyper(1, m = m2, n = n2, k = k_sample)
+
 cat("P(Defectives > 10% | N = 5000) =", round(p2, 4), "\n")
 ```
+
+**Calculations:**
+* $P(X = 0) \approx `r round(px0_2, 4)`$
+* $P(X = 1) \approx `r round(px1_2, 4)`$
+* $P(X > 1) = 1 - (`r round(px0_2, 4)` + `r round(px1_2, 4)`) = \mathbf{`r round(p2, 4)`}$
